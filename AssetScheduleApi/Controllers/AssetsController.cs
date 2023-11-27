@@ -53,14 +53,19 @@ namespace AssetScheduleApi.Controllers
         // PUT: api/Assets/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAsset(long id, Asset asset)
+        public async Task<IActionResult> PutAsset(long id, Asset assetUpdate)
         {
-            if (id != asset.Id)
+            var asset = await _context.Assets.FindAsync(id);
+            if (asset == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(asset).State = EntityState.Modified;
+            // Use the provided method to update the name
+            if (assetUpdate.Name != null)
+            {
+                asset.Update(assetUpdate.Name);
+            }
 
             try
             {
@@ -68,7 +73,7 @@ namespace AssetScheduleApi.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AssetExists(id))
+                if (!await AssetExists(id))
                 {
                     return NotFound();
                 }
@@ -116,9 +121,9 @@ namespace AssetScheduleApi.Controllers
             return NoContent();
         }
 
-        private bool AssetExists(long id)
+        private async Task<bool> AssetExists(long id)
         {
-            return (_context.Assets?.Any(e => e.Id == id)).GetValueOrDefault();
+            return await _context.Assets.AnyAsync(e => e.Id == id);
         }
     }
 }
