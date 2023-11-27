@@ -50,8 +50,16 @@ namespace AssetScheduleApi.Controllers
             return asset;
         }
 
-        // PUT: api/Assets/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Updates a specific Asset identified by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the asset to update.</param>
+        /// <param name="assetUpdate">The asset data used for the update. Only the Name is updated.</param>
+        /// <returns>
+        /// An IActionResult that results in a 204 No Content response if the update is successful,
+        /// a 404 Not Found response if the asset is not found, or a 400 Bad Request response
+        /// if there is a mismatch between the asset ID and the ID provided in the route.
+        /// </returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsset(long id, Asset assetUpdate)
         {
@@ -101,7 +109,11 @@ namespace AssetScheduleApi.Controllers
             return CreatedAtAction("GetAsset", new { id = asset.Id }, asset);
         }
 
-        // DELETE: api/Assets/5
+        /// <summary>
+        /// Deletes a specific Asset.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsset(long id)
         {

@@ -1,3 +1,4 @@
+using System.Reflection;
 using AssetScheduleApi.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    //builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        // Set the comments path for the Swagger JSON and UI.
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        c.IncludeXmlComments(xmlPath);
+    });
 }
 
 var app = builder.Build();
