@@ -1,53 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AssetScheduleApi.Models.Entities;
+using AssetScheduleApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AssetScheduleApi.Models;
-using AssetScheduleApi.Models.Entities;
 
 namespace AssetScheduleApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AssetsController : ControllerBase
-    {
-        private readonly ApplicationDbContext _context;
+    {        
+        private readonly IAssetService _assetService;
 
-        public AssetsController(ApplicationDbContext context)
+        public AssetsController(IAssetService assetService)
         {
-            _context = context;
+            _assetService = assetService;            
         }
 
-        // GET: api/Assets
+        /// <summary>
+        /// Retrieves all assets.
+        /// </summary>
+        /// <returns>A list of assets if found; otherwise, a NotFound response.</returns>
+        /// <response code="200">Returns the list of assets.</response>
+        /// <response code="404">If no assets are found.</response>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Asset>>> GetAssets()
         {
-          if (_context.Assets == null)
-          {
-              return NotFound();
-          }
-            return await _context.Assets.ToListAsync();
+            var assets = await _assetService.GetAllAssetsAsync();
+            if (assets == null || !assets.Any())
+            {
+                return NotFound();
+            }
+            return Ok(assets);
         }
 
-        // GET: api/Assets/5
+        /// <summary>
+        /// Retrieves a specific asset by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the asset to retrieve.</param>
+        /// <returns>The asset if found; otherwise, a NotFound response.</returns>
+        /// <response code="200">Returns the requested asset.</response>
+        /// <response code="404">If the asset with the specified ID is not found.</response>
         [HttpGet("{id}")]
         public async Task<ActionResult<Asset>> GetAsset(long id)
         {
-          if (_context.Assets == null)
-          {
-              return NotFound();
-          }
-            var asset = await _context.Assets.FindAsync(id);
-
+            var asset = await _assetService.GetAssetByIdAsync(id);
             if (asset == null)
             {
                 return NotFound();
             }
-
-            return asset;
+            return Ok(asset);
         }
 
         /// <summary>
@@ -63,50 +63,39 @@ namespace AssetScheduleApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsset(long id, Asset assetUpdate)
         {
-            var asset = await _context.Assets.FindAsync(id);
-            if (asset == null)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var updateResult = await _assetService.UpdateAssetAsync(id, assetUpdate);
+
+            if (!updateResult)
             {
                 return NotFound();
-            }
-
-            // Use the provided method to update the name
-            if (assetUpdate.Name != null)
-            {
-                asset.Update(assetUpdate.Name);
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await AssetExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
             }
 
             return NoContent();
         }
 
-        // POST: api/Assets
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Creates a new Asset.
+        /// </summary>
+        /// <param name="asset">The Asset object to create.</param>
+        /// <returns>A 201 Created response with the newly created Asset.</returns>
+        /// <response code="201">Asset created successfully.</response>
+        /// <response code="400">If the asset is null or invalid.</response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Asset))]
         public async Task<ActionResult<Asset>> PostAsset(Asset asset)
         {
-          if (_context.Assets == null)
-          {
-              return Problem("Entity set 'ApplicationDbContext.Assets'  is null.");
-          }
-            _context.Assets.Add(asset);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            return CreatedAtAction("GetAsset", new { id = asset.Id }, asset);
+            Asset createdAsset = await _assetService.CreateAssetAsync(asset);
+            return CreatedAtAction("GetAsset", new { id = createdAsset.Id }, createdAsset);
         }
 
         /// <summary>
@@ -117,25 +106,13 @@ namespace AssetScheduleApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsset(long id)
         {
-            if (_context.Assets == null)
+            var deleteResult = await _assetService.DeleteAssetAsync(id);
+            if (!deleteResult)
             {
                 return NotFound();
             }
-            var asset = await _context.Assets.FindAsync(id);
-            if (asset == null)
-            {
-                return NotFound();
-            }
-
-            _context.Assets.Remove(asset);
-            await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private async Task<bool> AssetExists(long id)
-        {
-            return await _context.Assets.AnyAsync(e => e.Id == id);
         }
     }
 }

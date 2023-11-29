@@ -1,10 +1,15 @@
 using System.Reflection;
 using AssetScheduleApi.Models;
+using AssetScheduleApi.Services;
+using AssetScheduleApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Register custom services
+builder.Services.AddScoped<IAssetService, AssetService>();
 
 // Configure MVC Controllers
 builder.Services.AddControllers();
