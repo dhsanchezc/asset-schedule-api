@@ -1,4 +1,5 @@
-﻿using AssetScheduleApi.Models.Entities;
+﻿using AssetScheduleApi.Models.DTOs;
+using AssetScheduleApi.Models.Entities;
 using AssetScheduleApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -81,21 +82,22 @@ namespace AssetScheduleApi.Controllers
         /// <summary>
         /// Creates a new Asset.
         /// </summary>
-        /// <param name="asset">The Asset object to create.</param>
-        /// <returns>A 201 Created response with the newly created Asset.</returns>
+        /// <param name="assetInput">The AssetInput object to create an Asset.</param>
+        /// <returns>A 201 Created response with the newly created AssetOutput.</returns>
         /// <response code="201">Asset created successfully.</response>
-        /// <response code="400">If the asset is null or invalid.</response>
+        /// <response code="400">If the assetInput is null or invalid.</response>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Asset))]
-        public async Task<ActionResult<Asset>> PostAsset(Asset asset)
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AssetOutput))]
+        public async Task<ActionResult<AssetOutput>> PostAsset(AssetInput assetInput)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            
+            AssetOutput createdAssetOutput = await _assetService.CreateAssetAsync(assetInput);
 
-            Asset createdAsset = await _assetService.CreateAssetAsync(asset);
-            return CreatedAtAction("GetAsset", new { id = createdAsset.Id }, createdAsset);
+            return CreatedAtAction(nameof(GetAsset), new { id = createdAssetOutput.Id }, createdAssetOutput);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@ using System.Reflection;
 using AssetScheduleApi.Models;
 using AssetScheduleApi.Services;
 using AssetScheduleApi.Services.Interfaces;
+using AssetScheduleApi.Utils;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,9 @@ builder.Services.AddControllers();
 // Note: Using In-Memory database for simplicity. Replace with a persistent database for production.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("AssetManagementSystemDb"));
+
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 // Configure Swagger for API documentation
 // Swagger is typically only used in development environments

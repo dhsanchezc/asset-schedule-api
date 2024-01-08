@@ -5,21 +5,21 @@ namespace AssetScheduleApi.Models.Entities
     public class Asset
     {
         public long Id { get; private set; }
+        //public long Id { get; }
 
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100, ErrorMessage = "Name must be less than 100 characters")]
         public string? Name { get; set; }
 
-
         // check ef
         public DateTime CreatedAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
 
         // periodicity
 
         public Asset()
-        {
-            CreatedAt = DateTime.UtcNow;
+        {           
+            CreatedAt = DateTime.UtcNow;            
         }
 
         public void Update(string newName)
@@ -28,5 +28,4 @@ namespace AssetScheduleApi.Models.Entities
             UpdatedAt = DateTime.UtcNow;
         }
     }
-
 }

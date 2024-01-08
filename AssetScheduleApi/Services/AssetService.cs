@@ -1,6 +1,8 @@
 ﻿using AssetScheduleApi.Models;
+using AssetScheduleApi.Models.DTOs;
 using AssetScheduleApi.Models.Entities;
 using AssetScheduleApi.Services.Interfaces;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetScheduleApi.Services
@@ -8,17 +10,27 @@ namespace AssetScheduleApi.Services
     public class AssetService : IAssetService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public AssetService(ApplicationDbContext context)
+        public AssetService(IMapper mapper, ApplicationDbContext context)
         {
+            _mapper = mapper;
             _context = context;
         }
 
-        public async Task<Asset> CreateAssetAsync(Asset asset)
+        public async Task<AssetOutput> CreateAssetAsync(AssetInput assetInput)
         {
-            _context.Assets.Add(asset);
+            // Map AssetInput to Asset entity
+            Asset newAsset = _mapper.Map<Asset>(assetInput);
+
+            // Add the new asset to the context and save changes
+            _context.Assets.Add(newAsset);
             await _context.SaveChangesAsync();
-            return asset;
+
+            // Map the saved Asset entity back to AssetOutput
+            AssetOutput assetOutput = _mapper.Map<AssetOutput>(newAsset);
+
+            return assetOutput;
         }
         
         public async Task<IEnumerable<Asset>> GetAllAssetsAsync()
